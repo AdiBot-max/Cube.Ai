@@ -1,1 +1,123 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Cube.AI</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+
+  <style>
+    body {
+      background: #0d0f12;
+      color: #fff;
+      font-family: Arial, sans-serif;
+      margin: 0;
+      padding: 30px;
+      display: flex;
+      flex-direction: column;
+      gap: 25px;
+    }
+
+    h1 {
+      margin: 0;
+      font-size: 32px;
+      font-weight: bold;
+      text-shadow: 0 0 10px #0ff;
+    }
+
+    #chatbox {
+      background: #14171c;
+      padding: 20px;
+      border-radius: 10px;
+      min-height: 250px;
+      max-height: 400px;
+      overflow-y: auto;
+      box-shadow: 0 0 15px rgba(0, 255, 255, 0.2);
+    }
+
+    .msg {
+      margin-bottom: 18px;
+      line-height: 1.5;
+    }
+
+    .user {
+      color: #0ff;
+      font-weight: bold;
+    }
+
+    .ai {
+      color: #fff;
+    }
+
+    #prompt {
+      width: 75%;
+      padding: 12px;
+      border-radius: 8px;
+      border: none;
+      outline: none;
+      font-size: 16px;
+      background: #1c1f26;
+      color: #fff;
+    }
+
+    #sendBtn {
+      padding: 12px 20px;
+      font-size: 16px;
+      border: none;
+      border-radius: 8px;
+      background: cyan;
+      cursor: pointer;
+      font-weight: bold;
+      margin-left: 8px;
+    }
+
+    #sendBtn:hover {
+      background: #00e6e6;
+    }
+  </style>
+</head>
+<body>
+
+<h1>Cube.AI</h1>
+
+<div id="chatbox"></div>
+
+<div>
+  <input id="prompt" placeholder="Ask something..." onkeydown="if(event.key==='Enter') sendMessage()">
+  <button id="sendBtn" onclick="sendMessage()">Send</button>
+</div>
+
+<script>
+async function sendMessage() {
+  const input = document.getElementById("prompt");
+  const text = input.value.trim();
+  if (!text) return;
+
+  addMessage("You", text, "user");
+  input.value = "";
+
+  const response = await fetch("/api/ai", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ prompt: text })
+  });
+
+  const data = await response.json();
+  addMessage("Cube.AI", data.reply, "ai");
+}
+
+function addMessage(sender, msg, type) {
+  const box = document.getElementById("chatbox");
+
+  box.innerHTML += `
+    <div class="msg ${type}">
+      <b class="${type}">${sender}:</b> ${msg}
+    </div>
+  `;
+
+  box.scrollTop = box.scrollHeight;
+}
+</script>
+
+</body>
+</html>
 
