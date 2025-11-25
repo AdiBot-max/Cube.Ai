@@ -6,7 +6,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
 
   <!-- Include marked.js for Markdown rendering -->
-  <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
 
   <style>
     body {
@@ -171,71 +171,68 @@
   <div id="prompt" contenteditable="true" placeholder="Ask something..."></div>
   <button id="sendBtn">Send</button>
 </div>
-
 <script>
 const chatbox = document.getElementById("chatbox");
-const promptDiv = document.getElementById("prompt");
-const sendBtn = document.getElementById("sendBtn");
+const canvasContainer = document.getElementById("canvasContainer");
+const canvas = document.getElementById("canvas");
+const modeSelect = document.getElementById("modeSelect");
 
-// Send message on button click
-sendBtn.addEventListener("click", sendMessage);
-
-// Enter sends, Shift+Enter adds new line
-promptDiv.addEventListener("keydown", (e) => {
-  if (e.key === "Enter" && !e.shiftKey) {
-    e.preventDefault();
-    sendMessage();
+// MODE SWITCH
+modeSelect.addEventListener("change", () => {
+  if (modeSelect.value === "chat") {
+    chatbox.style.display = "block";
+    canvasContainer.style.display = "none";
+  } else {
+    chatbox.style.display = "none";
+    canvasContainer.style.display = "block";
   }
 });
 
-// Auto-expand input
-promptDiv.addEventListener("input", () => {
-  promptDiv.style.height = "auto";
-  promptDiv.style.height = promptDiv.scrollHeight + "px";
-});
-
-// Send message function
+// SEND MESSAGE
 async function sendMessage() {
-  // Convert contenteditable HTML to text with line breaks
-  let text = promptDiv.innerHTML
-    .replace(/<div><br><\/div>/g, '\n')
-    .replace(/<div>/g, '\n')
-    .replace(/<\/div>/g, '')
-    .replace(/<br>/g, '\n');
-
-  text = text.trim();
+  const input = document.getElementById("prompt");
+  const text = input.value.trim();
   if (!text) return;
 
-  addMessage("You", text, "user");
-  promptDiv.innerHTML = "";
-  promptDiv.style.height = "auto";
+  const mode = modeSelect.value;
+  input.value = "";
 
-  try {
-    const response = await fetch("/api/ai", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ prompt: text })
-    });
+  if (mode === "chat") {
+    addMessage("You", text, "user");
+  } else {
+    appendToCanvas(`You:\n${text}\n\n`);
+  }
 
-    const data = await response.json();
+  const response = await fetch("/api/ai", {
+    method: "POST",
+    headers: {"Content-Type": "application/json"},
+    body: JSON.stringify({ prompt: text })
+  });
+  
+  const data = await response.json();
+
+  if (mode === "chat") {
     addMessage("Cube.AI", data.reply, "ai");
-  } catch (err) {
-    addMessage("Cube.AI", "Error: Unable to reach server.", "ai");
-    console.error(err);
+  } else {
+    appendToCanvas(`Cube.AI:\n${data.reply}\n\n`);
   }
 }
 
-// Add message to chatbox with Markdown support
+// CHAT MODE
 function addMessage(sender, msg, type) {
   const msgDiv = document.createElement("div");
   msgDiv.classList.add("msg", type);
 
-  // Convert Markdown to HTML
-  const html = marked.parse(msg);
-  msgDiv.innerHTML = `<b>${sender}:</b> ${html}`;
-
+  msgDiv.innerHTML = `<b>${sender}:</b> ${marked.parse(msg)}`;
   chatbox.appendChild(msgDiv);
   chatbox.scrollTop = chatbox.scrollHeight;
+}
+
+// CANVAS MODE (EDITABLE)
+function appendToCanvas(markdownText) {
+  const plain = markdownText;  
+  canvas.textContent += plain;
+  canvas.scrollTop = canvas.scrollHeight;
 }
 </script>
 
