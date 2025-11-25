@@ -5,8 +5,10 @@
   <title>Cube.AI</title>
   <meta name="viewport" content="width=device-width, initial-scale=1">
 
+  <!-- Include marked.js for Markdown rendering -->
+  <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+
   <style>
-    /* General Body */
     body {
       margin: 0;
       padding: 30px;
@@ -27,7 +29,6 @@
       letter-spacing: 1.2px;
     }
 
-    /* Chatbox */
     #chatbox {
       background: #14171c;
       padding: 20px;
@@ -41,15 +42,14 @@
       box-shadow: 0 0 25px rgba(0, 255, 255, 0.15);
     }
 
-    /* Messages */
     .msg {
       padding: 10px 14px;
       border-radius: 12px;
       line-height: 1.5;
       max-width: 75%;
       word-break: break-word;
-      white-space: pre-wrap;
       transition: transform 0.1s ease, box-shadow 0.2s ease;
+      white-space: pre-wrap;
     }
 
     .msg.user {
@@ -67,7 +67,6 @@
       box-shadow: 0 0 8px rgba(0,255,255,0.2);
     }
 
-    /* Input area */
     #input-area {
       display: flex;
       gap: 12px;
@@ -94,10 +93,6 @@
       transform: scale(1.01);
     }
 
-    #prompt::placeholder {
-      color: #888;
-    }
-
     #sendBtn {
       padding: 12px 22px;
       font-size: 16px;
@@ -114,6 +109,21 @@
       background: #00e6e6;
       transform: scale(1.05);
       box-shadow: 0 0 10px #0ff;
+    }
+
+    /* Optional: style for code blocks */
+    code {
+      background: rgba(0, 255, 255, 0.1);
+      padding: 2px 5px;
+      border-radius: 4px;
+      font-family: monospace;
+    }
+
+    pre {
+      background: rgba(0, 255, 255, 0.05);
+      padding: 8px;
+      border-radius: 6px;
+      overflow-x: auto;
     }
   </style>
 </head>
@@ -152,12 +162,12 @@ promptDiv.addEventListener("input", () => {
 
 // Send message function
 async function sendMessage() {
-  // Convert contenteditable HTML to text with proper line breaks
+  // Convert contenteditable HTML to text with line breaks
   let text = promptDiv.innerHTML
-    .replace(/<div><br><\/div>/g, '\n') // empty div = newline
-    .replace(/<div>/g, '\n')             // div start = newline
-    .replace(/<\/div>/g, '')             // div end removed
-    .replace(/<br>/g, '\n');             // br = newline
+    .replace(/<div><br><\/div>/g, '\n')
+    .replace(/<div>/g, '\n')
+    .replace(/<\/div>/g, '')
+    .replace(/<br>/g, '\n');
 
   text = text.trim();
   if (!text) return;
@@ -181,15 +191,15 @@ async function sendMessage() {
   }
 }
 
-// Add message to chatbox
+// Add message to chatbox with Markdown support
 function addMessage(sender, msg, type) {
   const msgDiv = document.createElement("div");
   msgDiv.classList.add("msg", type);
 
-  // Convert newlines to <br> so multi-line messages display correctly
-  const formattedMsg = msg.replace(/\n/g, "<br>");
+  // Convert Markdown to HTML
+  const html = marked.parse(msg);
+  msgDiv.innerHTML = `<b>${sender}:</b> ${html}`;
 
-  msgDiv.innerHTML = `<b>${sender}:</b> ${formattedMsg}`;
   chatbox.appendChild(msgDiv);
   chatbox.scrollTop = chatbox.scrollHeight;
 }
