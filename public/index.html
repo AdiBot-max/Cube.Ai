@@ -130,7 +130,14 @@
 <body>
 
 <h1>Cube.AI</h1>
+<select id="modeSelect">
+  <option value="chat" selected>Chat Mode</option>
+  <option value="canvas">Canvas Mode</option>
+</select>
 
+<div id="canvasContainer" style="display:none;">
+  <div id="canvas" contenteditable="true"></div>
+</div>
 <div id="chatbox"></div>
 
 <div id="input-area">
