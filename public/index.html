@@ -9,69 +9,101 @@
     body {
       background: #0d0f12;
       color: #fff;
-      font-family: Arial, sans-serif;
+      font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
       margin: 0;
       padding: 30px;
       display: flex;
       flex-direction: column;
-      gap: 25px;
+      gap: 20px;
     }
 
     h1 {
       margin: 0;
-      font-size: 32px;
+      font-size: 36px;
       font-weight: bold;
       text-shadow: 0 0 10px #0ff;
+      letter-spacing: 1px;
     }
 
     #chatbox {
       background: #14171c;
       padding: 20px;
-      border-radius: 10px;
+      border-radius: 12px;
       min-height: 250px;
-      max-height: 400px;
+      max-height: 500px;
       overflow-y: auto;
-      box-shadow: 0 0 15px rgba(0, 255, 255, 0.2);
+      box-shadow: 0 0 20px rgba(0, 255, 255, 0.2);
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
     }
 
     .msg {
-      margin-bottom: 18px;
-      line-height: 1.5;
+      line-height: 1.6;
+      padding: 6px 10px;
+      border-radius: 8px;
+      max-width: 80%;
+      word-wrap: break-word;
     }
 
     .user {
-      color: #0ff;
+      align-self: flex-end;
+      background: #0ff3;
+      color: #000;
       font-weight: bold;
     }
 
     .ai {
-      color: #fff;
-    }
-
-    #prompt {
-      width: 75%;
-      padding: 12px;
-      border-radius: 8px;
-      border: none;
-      outline: none;
-      font-size: 16px;
+      align-self: flex-start;
       background: #1c1f26;
       color: #fff;
     }
 
+    #input-area {
+      display: flex;
+      gap: 12px;
+      align-items: flex-end;
+    }
+
+    #prompt {
+      flex: 1;
+      padding: 12px;
+      border-radius: 10px;
+      background: #1c1f26;
+      color: #fff;
+      font-size: 16px;
+      outline: none;
+      min-height: 40px;
+      max-height: 120px;
+      overflow-y: auto;
+      box-shadow: inset 0 0 5px rgba(0, 255, 255, 0.2);
+      transition: box-shadow 0.2s ease, transform 0.1s ease;
+    }
+
+    #prompt:focus {
+      box-shadow: inset 0 0 8px #0ff;
+      transform: scale(1.01);
+    }
+
+    #prompt::placeholder {
+      color: #888;
+    }
+
     #sendBtn {
-      padding: 12px 20px;
+      padding: 12px 22px;
       font-size: 16px;
       border: none;
-      border-radius: 8px;
-      background: cyan;
+      border-radius: 10px;
+      background: #0ff;
       cursor: pointer;
       font-weight: bold;
-      margin-left: 8px;
+      color: #000;
+      transition: background 0.2s ease, transform 0.1s ease;
     }
 
     #sendBtn:hover {
       background: #00e6e6;
+      transform: scale(1.05);
     }
   </style>
 </head>
@@ -81,43 +113,66 @@
 
 <div id="chatbox"></div>
 
-<div>
-  <input id="prompt" placeholder="Ask something..." onkeydown="if(event.key==='Enter') sendMessage()">
-  <button id="sendBtn" onclick="sendMessage()">Send</button>
+<div id="input-area">
+  <div id="prompt" contenteditable="true" placeholder="Ask something..."></div>
+  <button id="sendBtn">Send</button>
 </div>
 
 <script>
+const chatbox = document.getElementById("chatbox");
+const promptDiv = document.getElementById("prompt");
+const sendBtn = document.getElementById("sendBtn");
+
+// Send message on button click
+sendBtn.addEventListener("click", sendMessage);
+
+// Send on Enter, new line on Shift+Enter
+promptDiv.addEventListener("keydown", (e) => {
+  if (e.key === "Enter" && !e.shiftKey) {
+    e.preventDefault();
+    sendMessage();
+  }
+});
+
 async function sendMessage() {
-  const input = document.getElementById("prompt");
-  const text = input.value.trim();
+  const text = promptDiv.innerText.trim();
   if (!text) return;
 
   addMessage("You", text, "user");
-  input.value = "";
+  promptDiv.innerHTML = ""; // clear input
+  promptDiv.style.height = "auto";
 
-  const response = await fetch("/api/ai", {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ prompt: text })
-  });
+  // Send to server
+  try {
+    const response = await fetch("/api/ai", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ prompt: text })
+    });
 
-  const data = await response.json();
-  addMessage("Cube.AI", data.reply, "ai");
+    const data = await response.json();
+    addMessage("Cube.AI", data.reply, "ai");
+  } catch (err) {
+    addMessage("Cube.AI", "Error: Unable to reach server.", "ai");
+    console.error(err);
+  }
 }
 
+// Add message to chatbox
 function addMessage(sender, msg, type) {
-  const box = document.getElementById("chatbox");
-
-  box.innerHTML += `
-    <div class="msg ${type}">
-      <b class="${type}">${sender}:</b> ${msg}
-    </div>
-  `;
-
-  box.scrollTop = box.scrollHeight;
+  const msgDiv = document.createElement("div");
+  msgDiv.classList.add("msg", type);
+  msgDiv.innerHTML = `<b>${sender}:</b> ${msg}`;
+  chatbox.appendChild(msgDiv);
+  chatbox.scrollTop = chatbox.scrollHeight;
 }
+
+// Auto-expand input height
+promptDiv.addEventListener("input", () => {
+  promptDiv.style.height = "auto";
+  promptDiv.style.height = promptDiv.scrollHeight + "px";
+});
 </script>
 
 </body>
 </html>
-
