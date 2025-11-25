@@ -176,6 +176,7 @@ const chatbox = document.getElementById("chatbox");
 const canvasContainer = document.getElementById("canvasContainer");
 const canvas = document.getElementById("canvas");
 const modeSelect = document.getElementById("modeSelect");
+const promptBox = document.getElementById("prompt");
 
 // MODE SWITCH
 modeSelect.addEventListener("change", () => {
@@ -190,12 +191,11 @@ modeSelect.addEventListener("change", () => {
 
 // SEND MESSAGE
 async function sendMessage() {
-  const input = document.getElementById("prompt");
-  const text = input.value.trim();
+  const text = promptBox.innerText.trim();  // FIXED
   if (!text) return;
 
   const mode = modeSelect.value;
-  input.value = "";
+  promptBox.innerText = "";  // FIXED
 
   if (mode === "chat") {
     addMessage("You", text, "user");
@@ -230,11 +230,21 @@ function addMessage(sender, msg, type) {
 
 // CANVAS MODE (EDITABLE)
 function appendToCanvas(markdownText) {
-  const plain = markdownText;  
-  canvas.textContent += plain;
+  canvas.textContent += markdownText;
   canvas.scrollTop = canvas.scrollHeight;
 }
+
+// ENTER TO SEND
+promptBox.addEventListener("keydown", (e) => {
+  if (e.key === "Enter" && !e.shiftKey) {
+    e.preventDefault();
+    sendMessage();
+  }
+});
+
+document.getElementById("sendBtn").onclick = sendMessage;
 </script>
+
 
 </body>
 </html>
