@@ -17,7 +17,7 @@ const groq = new Groq({
 });
 
 // Use environment variable for model if provided, otherwise default to Mixtral-8B
-const MODEL = process.env.GROQ_MODEL || "meta-llama/llama-4-scout-17b-16e-instruct;
+const MODEL = process.env.GROQ_MODEL || "meta-llama/llama-4-scout-17b-16e-instruct";
 
 app.post("/api/ai", async (req, res) => {
   try {
@@ -44,6 +44,7 @@ app.post("/api/ai", async (req, res) => {
 
 const port = process.env.PORT || 10000;
 app.listen(port, () => console.log(`Cube.AI server running on port ${port}`));
+
 
 
 
