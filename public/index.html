@@ -185,7 +185,11 @@ async function sendMessage() {
 function addMessage(sender, msg, type) {
   const msgDiv = document.createElement("div");
   msgDiv.classList.add("msg", type);
-  msgDiv.innerHTML = `<b>${sender}:</b> ${msg}`;
+
+  // Convert newlines to <br> so multi-line messages display correctly
+  const formattedMsg = msg.replace(/\n/g, "<br>");
+
+  msgDiv.innerHTML = `<b>${sender}:</b> ${formattedMsg}`;
   chatbox.appendChild(msgDiv);
   chatbox.scrollTop = chatbox.scrollHeight;
 }
